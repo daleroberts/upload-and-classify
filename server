@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""
+Upload file and classify.
+"""
+import numpy as np
+import png
+import os
+
+from flask import Flask, request, redirect, url_for, abort, jsonify
+from keras.models import load_model
+from keras import backend as K
+from png import FormatError
+
+app = Flask(__name__)
+app.config['TMPPATH'] = '/tmp'
+app.config['MODEL'] = 'model.h5'
+app.config['NROWS'] = 28
+app.config['NCOLS'] = 28
+
+model = load_model(app.config['MODEL'])
+
+if K.image_dim_ordering() == 'th':
+    newshape = (1, 1, app.config['NROWS'], app.config['NCOLS'])
+else:
+    newshape = (1, app.config['NROWS'], app.config['NCOLS'], 1)
+
+
+@app.route("/", methods=['POST', 'GET'])
+def index():
+    try:
+        if request.method == 'POST':
+            fd = request.files['file']
+            reader = png.Reader(fd)
+            nr, nc, pngdata, meta = reader.asDirect()
+            data = np.vstack(map(np.float32, pngdata)) / 255.
+            data = data.reshape(newshape)
+            pred = int(np.argmax(model.predict(data)[0]))
+            return jsonify({"cls": pred, "fn": fd.filename})
+    except FormatError as e:
+        return abort(500)
+    except Exception as e:
+        raise
+        return abort(500)
+    return """
+    <!doctype html>
+    <style>h2,p {font-family: sans-serif;}</style>
+    <title>Identify number</title>
+    <h2>Upload an image to identify</h2>
+    <form action="" method=post enctype=multipart/form-data>
+      <p><input type=file name=file><input type=submit value=Upload></p>
+    </form>
+    </html>
+    """
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=False)

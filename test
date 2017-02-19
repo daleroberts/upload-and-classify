@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+import numpy as np
+import requests
+import json
+import png
+import os
+import io
+
+from keras.datasets import mnist
+
+os.environ['NO_PROXY'] = '127.0.0.1'
+
+nrows, ncols = 28, 28
+writer = png.Writer(ncols, nrows, greyscale=True)
+
+_, (X_test, y_test) = mnist.load_data()
+
+X_test = X_test.astype(np.uint8)
+print(X_test.shape[0], 'test samples')
+
+try:
+    for i, (x, y) in enumerate(zip(X_test, y_test)):
+        fn = '{}-{}.png'.format(i, y)
+        fd = io.BytesIO()
+        writer.write(fd, x)
+        fd.seek(0)
+        ret = requests.post('http://127.0.0.1:5000',
+                            files={'file': (fn, fd)})
+        print(json.loads(ret.text))
+except KeyboardInterrupt:
+    pass

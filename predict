@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import numpy as np
+import argparse
+import png
+
+from keras.models import load_model
+from keras import backend as K
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-model', default='model.h5')
+parser.add_argument('img', nargs='+')
+args = parser.parse_args()
+
+model = load_model(args.model)
+
+for img in args.img:
+    r = png.Reader(img)
+    nrow, ncol, pngdata, meta = r.asDirect()
+    data = np.vstack(map(np.float32, pngdata))/255.
+    
+    if K.image_dim_ordering() == 'th':
+        data = data.reshape((1, 1, data.shape[0], data.shape[1]))
+    else:
+        data = data.reshape((1, data.shape[0], data.shape[1], 1))
+
+    cls = np.argmax(model.predict(data)[0])
+    print(img, cls)
