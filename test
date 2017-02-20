@@ -10,13 +10,13 @@ from keras.datasets import mnist
 
 os.environ['NO_PROXY'] = '127.0.0.1'
 
-nrows, ncols = 28, 28
-writer = png.Writer(ncols, nrows, greyscale=True)
-
 _, (X_test, y_test) = mnist.load_data()
 
 X_test = X_test.astype(np.uint8)
 print(X_test.shape[0], 'test samples')
+
+nrows, ncols = X_test.shape[1:3]
+writer = png.Writer(ncols, nrows, greyscale=True)
 
 try:
     for i, (x, y) in enumerate(zip(X_test, y_test)):

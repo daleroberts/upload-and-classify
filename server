@@ -1,29 +1,20 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Upload file and classify.
+Server that takes an uploaded PNG and classifies
+it based on a pre-trained Keras model.
 """
 import numpy as np
 import png
 import os
 
-from flask import Flask, request, redirect, url_for, abort, jsonify
+from flask import Flask, request, abort, jsonify
 from keras.models import load_model
-from keras import backend as K
-from png import FormatError
 
 app = Flask(__name__)
-app.config['TMPPATH'] = '/tmp'
-app.config['MODEL'] = 'model.h5'
-app.config['NROWS'] = 28
-app.config['NCOLS'] = 28
 
-model = load_model(app.config['MODEL'])
-
-if K.image_dim_ordering() == 'th':
-    newshape = (1, 1, app.config['NROWS'], app.config['NCOLS'])
-else:
-    newshape = (1, app.config['NROWS'], app.config['NCOLS'], 1)
-
+model = load_model('model.h5')
+shape = model.layers[0].input.get_shape()
+newshape = [x or 1 for x in shape.as_list()]
 
 @app.route("/", methods=['POST', 'GET'])
 def index():
@@ -36,15 +27,14 @@ def index():
             data = data.reshape(newshape)
             pred = int(np.argmax(model.predict(data)[0]))
             return jsonify({"cls": pred, "fn": fd.filename})
-    except FormatError as e:
+    except png.FormatError as e:
         return abort(500)
     except Exception as e:
-        raise
         return abort(500)
     return """
     <!doctype html>
     <style>h2,p {font-family: sans-serif;}</style>
-    <title>Identify number</title>
+    <title>Identify</title>
     <h2>Upload an image to identify</h2>
     <form action="" method=post enctype=multipart/form-data>
       <p><input type=file name=file><input type=submit value=Upload></p>
