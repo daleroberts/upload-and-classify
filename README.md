@@ -73,7 +73,8 @@ If you really want to retrain the model, you can do:
 and the model will be saved to `model.h5`.
 
 Since the brief was "do not get hung up on scaling or model accuracy issues"
-the model is stock-standard, nothing really to see here.
+the model is stock-standard, nothing really to see here. The model was trained
+on a Tesla K80 using the `tensorflow-gpu` backend.
 
 ### Predict
 
