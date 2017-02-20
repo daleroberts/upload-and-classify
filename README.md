@@ -1,7 +1,12 @@
 # Upload and classify
 
-Simple Flask server to take an uploaded PNG file and classify it using a
-pre-trained Keras model.
+Simple [Flask](http://flask.pocoo.org/) server to take an uploaded PNG file and
+classify it using a pre-trained [Keras](https://keras.io/) model based on the
+specification:
+```
+POST /mnist/classify
+    Returns the class of the image. Invalid input should return a 404.
+```
 
 This should work with Python 3 and (legacy) Python 2.
 
@@ -17,8 +22,9 @@ pip install -r requirements.txt
 
 The server takes PNG images, converts them to the correctly shaped numpy array,
 and passes them to a pre-trained [Keras](https://keras.io/) model. The shape is
-determined automatically from the Keras model which means the server code
-shouldn't need to be changed if you change models.
+determined automatically from the [Keras](https://keras.io/) model which means this server code
+shouldn't need to be changed if you change models. The only thing that is MNIST
+specific is the `/mnist/classify` route.
 
 The server returns JSON with the predicted class (i.e., "number" for the MNIST
 case) and the name of the PNG file that was uploaded (so that client-side
@@ -27,11 +33,17 @@ correct reponse to the correct PNG). The names in the JSON were made
 deliberately short to hint that one should think about network bandwidth
 when returning JSON.
 
-The server returns error code 500 when something bad happens to make it easy to
+The server returns error code 404 when something bad happens to make it easy to
 handle this error from client-side javascript.
 
+To run the server, do:
 ```
 ./server
+```
+
+or alternatively:
+```
+flask run --host=0.0.0.0
 ```
 
 Navigate [here](http://127.0.0.1:5000) and upload a PNG file. I've placed some
@@ -54,15 +66,19 @@ Make sure the server is running (in another terminal session?) and then run:
 
 ### Training
 
-If you want to retrain the model, you can do:
+If you really want to retrain the model, you can do:
 ```
 ./train
 ```
+and the model will be saved to `model.h5`.
+
+Since the brief was "do not get hung up on scaling or model accuracy issues"
+the model is stock-standard, nothing really to see here.
 
 ### Predict
 
-If you want to test the model from the command line with a specific images you can do:
+If you want to test the model from the command line (without touching the server) 
+you can do:
 ```
 ./predict img1.png [img2.png img3.png ...]
 ```
-

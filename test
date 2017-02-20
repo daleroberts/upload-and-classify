@@ -24,7 +24,7 @@ try:
         fd = io.BytesIO()
         writer.write(fd, x)
         fd.seek(0)
-        ret = requests.post('http://127.0.0.1:5000',
+        ret = requests.post('http://127.0.0.1:5000/mnist/classify',
                             files={'file': (fn, fd)})
         print(json.loads(ret.text))
 except KeyboardInterrupt:
