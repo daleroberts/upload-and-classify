@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""
+Deploy the model.
+"""
+import tfdeploy as td
+import numpy as np
+import argparse
+
+from keras.models import load_model
+from keras import backend as K
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-model', default='model.h5')
+args = parser.parse_args()
+
+tfmodel = load_model(args.model)
+
+x = tfmodel.layers[0].input
+y = tfmodel.layers[-1].output
+sess = K.get_session()
+print(x, y)
+
+npmodel = td.Model()
+npmodel.add(y, sess)
+npmodel.save(args.model.replace('h5', 'pkl'))
